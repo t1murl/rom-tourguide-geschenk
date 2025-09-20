@@ -5,13 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Big Bus Rom Tour - Digitaler Reiseführer für Mama & Papa</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="responsive-nav.css">
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">🏛️ Rom Tour Guide</div>
-            <ul class="nav-menu">
+            <button class="nav-toggle" id="nav-toggle" aria-label="Navigation öffnen">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
                 <li><a href="#welcome" class="nav-link">Willkommen</a></li>
                 <li><a href="#personal-experience" class="nav-link">Eure Erfahrung</a></li>
                 <li><a href="#overview" class="nav-link">Tour Übersicht</a></li>

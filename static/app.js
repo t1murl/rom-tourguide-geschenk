@@ -79,6 +79,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // Mobile navigation toggle functionality
+    function initMobileNavigation() {
+        const navToggle = document.getElementById('nav-toggle');
+        const navMenu = document.getElementById('nav-menu');
+
+        if (!navToggle || !navMenu) return;
+
+        navToggle.addEventListener('click', function() {
+            navToggle.classList.toggle('nav-toggle--active');
+            navMenu.classList.toggle('nav-menu--open');
+
+            // Update aria-label for accessibility
+            const isOpen = navMenu.classList.contains('nav-menu--open');
+            navToggle.setAttribute('aria-label', isOpen ? 'Navigation schließen' : 'Navigation öffnen');
+        });
+
+        // Close mobile menu when clicking on a nav link
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                navToggle.classList.remove('nav-toggle--active');
+                navMenu.classList.remove('nav-menu--open');
+                navToggle.setAttribute('aria-label', 'Navigation öffnen');
+            });
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+                navToggle.classList.remove('nav-toggle--active');
+                navMenu.classList.remove('nav-menu--open');
+                navToggle.setAttribute('aria-label', 'Navigation öffnen');
+            }
+        });
+    }
+
     // Smooth scrolling for navigation links
     function initSmoothScrolling() {
         const navLinks = document.querySelectorAll('.nav-link');
@@ -520,6 +556,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🏛️ Initializing Rome Tour Guide...');
         
         addModalStyles(); // Add styles first
+        initMobileNavigation(); // Add mobile navigation
         initSmoothScrolling();
         initBusStopModal();
         initAttractionCards();
