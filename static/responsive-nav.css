@@ -102,7 +102,7 @@
   }
 }
 
-/* Mobile navigation (below 768px) */
+/* Mobile navigation (below 768px) - CRITICAL FOR IPHONE */
 @media (max-width: 768px) {
   .nav-toggle {
     display: flex;
@@ -124,18 +124,23 @@
     visibility: hidden;
     transition: all var(--duration-normal) var(--ease-standard);
     max-width: 100%;
+    z-index: 999;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    display: flex; /* Wichtig: flex explizit setzen */
   }
 
   .nav-menu.nav-menu--open {
     transform: translateY(0);
     opacity: 1;
     visibility: visible;
+    display: flex; /* Sicherstellen dass es sichtbar ist */
   }
 
   .nav-menu li {
     width: 100%;
     text-align: center;
     border-bottom: 1px solid rgba(var(--color-cream-100-rgb, 255, 255, 255), 0.1);
+    list-style: none; /* Explizit list-style entfernen */
   }
 
   .nav-menu li:last-child {
@@ -149,6 +154,21 @@
     font-size: var(--font-size-base);
     border-radius: 0;
     white-space: normal;
+    color: var(--color-cream-100);
+    text-decoration: none;
+  }
+
+  /* Mobile active state */
+  .nav-link--active {
+    background: linear-gradient(135deg, rgba(var(--color-teal-300-rgb, 50, 184, 198), 0.3), rgba(var(--color-teal-400-rgb, 45, 166, 178), 0.4)) !important;
+    color: var(--color-cream-100) !important;
+    transform: scale(1) !important;
+    box-shadow: inset 0 0 0 2px rgba(var(--color-teal-300-rgb, 50, 184, 198), 0.5);
+  }
+
+  /* Hide active indicator on mobile */
+  .nav-active-indicator {
+    display: none !important;
   }
 
   .nav-toggle.nav-toggle--active span:nth-child(1) {
@@ -178,5 +198,145 @@
     width: 20px;
     height: 2px;
     margin: 2px 0;
+  }
+}
+
+/* Enhanced touch targets for mobile */
+@media (max-width: 768px) {
+  .nav-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-link {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Enhanced navigation styles for active section highlighting */
+.nav-link--active {
+  background: rgba(var(--color-teal-300-rgb, 50, 184, 198), 0.25) !important;
+  color: var(--color-teal-300) !important;
+  transform: scale(1.05);
+}
+
+.nav-active-indicator {
+  position: absolute;
+  background: linear-gradient(135deg, rgba(var(--color-teal-300-rgb, 50, 184, 198), 0.2), rgba(var(--color-teal-400-rgb, 45, 166, 178), 0.3));
+  border-radius: var(--radius-base);
+  transition: all var(--duration-normal) var(--ease-standard);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  box-shadow: 0 2px 8px rgba(var(--color-teal-300-rgb, 50, 184, 198), 0.15);
+}
+
+/* iPad specific adjustments */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .nav-link--active {
+    background: rgba(var(--color-teal-300-rgb, 50, 184, 198), 0.2) !important;
+    color: var(--color-teal-300) !important;
+    transform: scale(1.02);
+  }
+
+  .nav-active-indicator {
+    opacity: 1 !important;
+  }
+}
+
+/* iPhone specific fixes */
+@media (max-width: 768px) {
+  /* Ensure navbar has proper stacking context */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(var(--color-slate-900-rgb, 19, 52, 59), 0.95);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Force mobile menu to be visible when open */
+  .nav-menu {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: rgba(var(--color-slate-900-rgb, 19, 52, 59), 0.98) !important;
+    backdrop-filter: blur(10px) !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: var(--space-16) !important;
+    box-shadow: var(--shadow-lg) !important;
+    transform: translateY(-100%) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all var(--duration-normal) var(--ease-standard) !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    z-index: 999 !important;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
+    display: flex !important;
+    margin: 0 !important;
+    list-style: none !important;
+    min-height: auto !important;
+  }
+
+  .nav-menu.nav-menu--open {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+  }
+
+  /* Ensure hamburger button is always visible */
+  .nav-toggle {
+    display: flex !important;
+    position: relative !important;
+    z-index: 1001 !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    cursor: pointer !important;
+  }
+
+  /* Force menu items to be styled correctly */
+  .nav-menu li {
+    width: 100% !important;
+    text-align: center !important;
+    border-bottom: 1px solid rgba(var(--color-cream-100-rgb, 255, 255, 253), 0.1) !important;
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .nav-menu li:last-child {
+    border-bottom: none !important;
+  }
+
+  .nav-link {
+    display: block !important;
+    width: 100% !important;
+    padding: var(--space-16) var(--space-12) !important;
+    font-size: var(--font-size-base) !important;
+    border-radius: 0 !important;
+    white-space: normal !important;
+    color: var(--color-cream-100) !important;
+    text-decoration: none !important;
+    text-align: center !important;
+    line-height: 1.4 !important;
+  }
+
+  .nav-link:hover {
+    background: rgba(var(--color-teal-300-rgb, 50, 184, 198), 0.2) !important;
+    color: var(--color-cream-100) !important;
   }
 }

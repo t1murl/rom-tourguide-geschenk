@@ -84,62 +84,218 @@ document.addEventListener('DOMContentLoaded', function() {
         const navToggle = document.getElementById('nav-toggle');
         const navMenu = document.getElementById('nav-menu');
 
-        if (!navToggle || !navMenu) return;
+        if (!navToggle || !navMenu) {
+            console.error('Mobile nav elements not found');
+            return;
+        }
 
-        navToggle.addEventListener('click', function() {
-            navToggle.classList.toggle('nav-toggle--active');
-            navMenu.classList.toggle('nav-menu--open');
+        // Force initial mobile state
+        if (window.innerWidth <= 768) {
+            navMenu.style.display = 'flex';
+            console.log('Mobile nav initialized');
+        }
 
-            // Update aria-label for accessibility
+        navToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
             const isOpen = navMenu.classList.contains('nav-menu--open');
-            navToggle.setAttribute('aria-label', isOpen ? 'Navigation schließen' : 'Navigation öffnen');
+
+            console.log('Nav toggle clicked, currently open:', isOpen);
+
+            if (isOpen) {
+                // Close menu
+                navToggle.classList.remove('nav-toggle--active');
+                navMenu.classList.remove('nav-menu--open');
+                navMenu.style.display = 'flex'; // Keep flex on mobile
+                navToggle.setAttribute('aria-label', 'Navigation öffnen');
+                console.log('Menu closed');
+            } else {
+                // Open menu
+                navToggle.classList.add('nav-toggle--active');
+                navMenu.classList.add('nav-menu--open');
+                navMenu.style.display = 'flex';
+                navToggle.setAttribute('aria-label', 'Navigation schließen');
+                console.log('Menu opened');
+            }
         });
 
         // Close mobile menu when clicking on a nav link
         const navLinks = document.querySelectorAll('.nav-link');
         navLinks.forEach(link => {
             link.addEventListener('click', function() {
-                navToggle.classList.remove('nav-toggle--active');
-                navMenu.classList.remove('nav-menu--open');
-                navToggle.setAttribute('aria-label', 'Navigation öffnen');
+                if (window.innerWidth <= 768) {
+                    navToggle.classList.remove('nav-toggle--active');
+                    navMenu.classList.remove('nav-menu--open');
+                    navToggle.setAttribute('aria-label', 'Navigation öffnen');
+                    console.log('Menu closed after link click');
+                }
             });
         });
 
         // Close mobile menu when clicking outside
         document.addEventListener('click', function(e) {
-            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+            if (window.innerWidth <= 768 &&
+                !navToggle.contains(e.target) &&
+                !navMenu.contains(e.target) &&
+                navMenu.classList.contains('nav-menu--open')) {
                 navToggle.classList.remove('nav-toggle--active');
                 navMenu.classList.remove('nav-menu--open');
                 navToggle.setAttribute('aria-label', 'Navigation öffnen');
+                console.log('Menu closed by outside click');
             }
         });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                // Desktop mode - reset mobile styles
+                navMenu.style.display = '';
+                navToggle.classList.remove('nav-toggle--active');
+                navMenu.classList.remove('nav-menu--open');
+                console.log('Switched to desktop mode');
+            } else {
+                // Mobile mode - ensure flex display
+                navMenu.style.display = 'flex';
+                console.log('Switched to mobile mode');
+            }
+        });
+
+        console.log('Mobile navigation initialized successfully');
     }
 
-    // Smooth scrolling for navigation links
-    function initSmoothScrolling() {
+    // Active section highlighting and smooth scrolling for navigation
+    function initActiveNavigation() {
         const navLinks = document.querySelectorAll('.nav-link');
-        
+        const sections = document.querySelectorAll('section[id]');
+        const navbar = document.querySelector('.navbar');
+
+        if (!navLinks.length || !sections.length) return;
+
+        let isScrolling = false;
+
+        // Create active indicator background
+        const activeIndicator = document.createElement('div');
+        activeIndicator.className = 'nav-active-indicator';
+        activeIndicator.style.cssText = `
+            position: absolute;
+            background: rgba(50, 184, 198, 0.2);
+            border-radius: var(--radius-base);
+            transition: all var(--duration-normal) var(--ease-standard);
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0;
+        `;
+
+        // Add indicator to nav menu
+        const navMenu = document.getElementById('nav-menu');
+        if (navMenu) {
+            navMenu.style.position = 'relative';
+            navMenu.appendChild(activeIndicator);
+        }
+
+        // Function to update active nav item
+        function updateActiveNavItem() {
+            if (isScrolling) return;
+
+            const scrollPosition = window.scrollY + 100; // Offset for navbar height
+            let currentSection = '';
+
+            // Find current section
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+
+                if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            // Update nav links
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                const sectionId = href ? href.substring(1) : '';
+
+                if (sectionId === currentSection) {
+                    link.classList.add('nav-link--active');
+                    updateActiveIndicator(link);
+                } else {
+                    link.classList.remove('nav-link--active');
+                }
+            });
+        }
+
+        // Function to update active indicator position
+        function updateActiveIndicator(activeLink) {
+            if (!activeLink || window.innerWidth <= 768) {
+                // Hide indicator on mobile
+                activeIndicator.style.opacity = '0';
+                return;
+            }
+
+            const linkRect = activeLink.getBoundingClientRect();
+            const menuRect = navMenu.getBoundingClientRect();
+
+            activeIndicator.style.opacity = '1';
+            activeIndicator.style.left = (linkRect.left - menuRect.left) + 'px';
+            activeIndicator.style.top = (linkRect.top - menuRect.top) + 'px';
+            activeIndicator.style.width = linkRect.width + 'px';
+            activeIndicator.style.height = linkRect.height + 'px';
+        }
+
+        // Smooth scrolling for navigation links
         navLinks.forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
+                isScrolling = true;
+
                 const targetId = this.getAttribute('href').substring(1);
                 const targetSection = document.getElementById(targetId);
                 
                 if (targetSection) {
-                    const navHeight = document.querySelector('.navbar').offsetHeight;
+                    const navHeight = navbar ? navbar.offsetHeight : 0;
                     const targetPosition = targetSection.offsetTop - navHeight - 20;
                     
+                    // Remove all active classes first
+                    navLinks.forEach(nl => nl.classList.remove('nav-link--active'));
+                    // Add active class to clicked link
+                    this.classList.add('nav-link--active');
+                    updateActiveIndicator(this);
+
                     window.scrollTo({
                         top: targetPosition,
                         behavior: 'smooth'
                     });
                     
-                    // Add active state
-                    navLinks.forEach(nl => nl.classList.remove('active'));
-                    this.classList.add('active');
+                    // Re-enable scroll detection after animation
+                    setTimeout(() => {
+                        isScrolling = false;
+                        updateActiveNavItem();
+                    }, 1000);
                 }
             });
         });
+
+        // Throttled scroll handler for performance
+        let scrollTimeout;
+        function handleScroll() {
+            if (scrollTimeout) clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(updateActiveNavItem, 10);
+        }
+
+        // Listen for scroll events
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        // Listen for resize to update indicator position
+        window.addEventListener('resize', () => {
+            const activeLink = document.querySelector('.nav-link--active');
+            if (activeLink) {
+                setTimeout(() => updateActiveIndicator(activeLink), 100);
+            }
+        });
+
+        // Initial call
+        updateActiveNavItem();
     }
 
     // Bus stop modal functionality
@@ -557,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         addModalStyles(); // Add styles first
         initMobileNavigation(); // Add mobile navigation
-        initSmoothScrolling();
+        initActiveNavigation();
         initBusStopModal();
         initAttractionCards();
         initPersonalPhotoFeatures();
@@ -658,8 +814,8 @@ document.addEventListener('click', function(e) {
                 sparkleStyle.textContent = `
                     @keyframes sparkle-fade {
                         0% { opacity: 1; transform: scale(0.5) rotate(0deg); }
-                        50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
-                        100% { opacity: 0; transform: scale(0.8) rotate(360deg); }
+                        50% { opacity: 1; transform: scale(1.2) rotate(-5deg); }
+                        100% { opacity: 0; transform: scale(1) rotate(360deg); }
                     }
                 `;
                 document.head.appendChild(sparkleStyle);
